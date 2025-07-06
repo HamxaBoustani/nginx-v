@@ -189,7 +189,7 @@ server {
         fastcgi_pass unix:$php_fpm_full_path;
 
         # Ensure correct path is passed to PHP
-        #fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        #fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         #include fastcgi_params;
     }
 
@@ -232,7 +232,7 @@ server {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:$php_fpm_full_path;
         
-        #fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        #fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         #include fastcgi_params;
     }
 
