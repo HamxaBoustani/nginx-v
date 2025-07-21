@@ -355,7 +355,7 @@ if [[ "$is_wp_choice" == "y" || "$is_wp_choice" == "Y" ]]; then
 
         rm -rf "$root_dir/wordpress" "$root_dir/latest.zip" || { echo "Error: Cleaning up temporary WordPress files failed."; exit 1; }
 
-        sed -i '17s|.*|require( __DIR__ . '\''/core/wp-blog-header.php'\'' );|' "$root_dir/index.php" || { echo "Error: Replacing line 17 in index.php failed."; exit 1; }
+        sed -i '17s|.*|require __DIR__ . '\''/core/wp-blog-header.php'\'';|' "$root_dir/index.php" || { echo "Error: Replacing line 17 in index.php failed."; exit 1; }
 
     fi
 
