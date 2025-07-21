@@ -327,8 +327,38 @@ if [[ "$is_wp_choice" == "y" || "$is_wp_choice" == "Y" ]]; then
     wget -P "$root_dir" https://wordpress.org/latest.zip || { echo "Error: WordPress download failed."; exit 1; }
     echo "Unzipping WordPress files..."
     unzip -q "$root_dir/latest.zip" -d "$root_dir" || { echo "Error: Unzipping WordPress failed."; exit 1; }
-    mv "$root_dir/wordpress/"* "$root_dir/" || { echo "Error: Moving WordPress files failed."; exit 1; }
-    rm -rf "$root_dir/wordpress" "$root_dir/latest.zip" || { echo "Error: Cleaning up temporary WordPress files failed."; exit 1; }
+    rm -rf "$root_dir/wordpress/readme.html" "$root_dir/wordpress/license.txt" || { echo "Error: Cleaning up temporary WordPress files failed."; exit 1; }
+    find "$root_dir/wordpress/wp-content/plugins/" -mindepth 1 ! -name 'index.php' -exec rm -rf {} + || { echo "Error: Cleaning up plugins failed."; exit 1; }
+    find "$root_dir/wordpress/wp-content/themes/" -mindepth 1 ! -name 'index.php' -exec rm -rf {} + || { echo "Error: Cleaning up themes failed."; exit 1; }
+
+    read -p "Do you want to install WordPress with the standard structure (default) or a custom structure? (s/c): " wp_structure_choice
+    if [[ "$wp_structure_choice" == "s" ]]; then
+        mv "$root_dir/wordpress/"* "$root_dir/" || { echo "Error: Moving WordPress files failed."; exit 1; }
+        rm -rf "$root_dir/wordpress" "$root_dir/latest.zip" || { echo "Error: Cleaning up temporary WordPress files failed."; exit 1; }
+    else
+        mkdir -p "$root_dir/config" "$root_dir/core" "$root_dir/plugins" "$root_dir/public" "$root_dir/template" "$root_dir/uploads" "$root_dir/languages" || {
+            echo "Error: Failed to create required directories."; exit 1;
+        }
+
+        mv "$root_dir/wordpress/wp-content/plugins/"* "$root_dir/plugins" || { echo "Error: Moving plugins failed."; exit 1; }
+        rm -rf "$root_dir/wordpress/wp-content/plugins"
+
+        mv "$root_dir/wordpress/wp-content/"* "$root_dir/public" || { echo "Error: Moving public content failed."; exit 1; }
+        rm -rf "$root_dir/wordpress/wp-content"
+
+        mv "$root_dir/wordpress/"* "$root_dir/core" || { echo "Error: Moving core files failed."; exit 1; }
+        mv "$root_dir/core/index.php" "$root_dir/" || { echo "Error: Moving index.php from core failed."; exit 1; }
+        # Copy index.php to required folders
+        for dir in uploads config template core; do
+            cp -i "$root_dir/public/index.php" "$root_dir/$dir" || { echo "Error: Copying index.php to $dir failed."; exit 1; }
+        done
+
+        rm -rf "$root_dir/wordpress" "$root_dir/latest.zip" || { echo "Error: Cleaning up temporary WordPress files failed."; exit 1; }
+
+        sed -i '17s|.*|require( __DIR__ . '\''/core/wp-blog-header.php'\'' );|' "$root_dir/index.php" || { echo "Error: Replacing line 17 in index.php failed."; exit 1; }
+
+    fi
+
     echo "WordPress installed successfully in $root_dir."
 
     echo "Setting file permissions for WordPress (for security and proper functioning)..."
