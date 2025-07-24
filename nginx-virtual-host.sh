@@ -357,14 +357,15 @@ if [[ "$is_wp_choice" == "y" || "$is_wp_choice" == "Y" ]]; then
 
         sed -i '17s|.*|require __DIR__ . '\''/core/wp-blog-header.php'\'';|' "$root_dir/index.php" || { echo "Error: Replacing line 17 in index.php failed."; exit 1; }
 
+        touch "$root_dir/config/theme-path.php" "$root_dir/config/upload-path.php" || { echo "Failed to create MU-Plugins file."; exit 1; }
     fi
 
     echo "WordPress installed successfully in $root_dir."
 
     echo "Setting file permissions for WordPress (for security and proper functioning)..."
-    chown -R www-data:www-data "$root_dir" || { echo "Error: Setting file ownership failed."; exit 1; }
-    find "$root_dir" -type d -exec chmod 755 {} \; || { echo "Error: Setting directory permissions failed."; exit 1; }
-    find "$root_dir" -type f -exec chmod 644 {} \; || { echo "Error: Setting file permissions failed."; exit 1; }
+    chown -R www-data:www-data "$root_dir" "$logs_dir" || { echo "Error: Setting file ownership failed."; exit 1; }
+    # find "$root_dir" -type d -exec chmod 755 {} \; || { echo "Error: Setting directory permissions failed."; exit 1; }
+    # find "$root_dir" -type f -exec chmod 644 {} \; || { echo "Error: Setting file permissions failed."; exit 1; }
     
     echo "WordPress permissions set."
 else
@@ -382,3 +383,45 @@ echo "======================================================="
 # echo "Remember to ensure your Nginx snippets for SSL and PHP-FPM exist and are correctly configured."
 # echo "Place your website files in '$root_dir'."
 # echo "======================================================="
+# =============================================================
+# define('WP_HOME', 'https://wordpress.test');
+# define('WP_SITEURL', WP_HOME . '/core');
+# define('WP_CONTENT_DIR', dirname(__DIR__) . '/public');
+# define('WP_CONTENT_URL', WP_HOME . '/public');
+# define('WP_PLUGIN_DIR', dirname(__DIR__) . '/plugins');
+# define('WP_PLUGIN_URL', WP_HOME . '/plugins');
+# define('WPMU_PLUGIN_DIR', dirname(__DIR__) . '/config');
+# define('WPMU_PLUGIN_URL', WP_HOME . '/config');
+# define( 'WP_LANG_DIR', dirname(__DIR__) . '/languages' );
+
+# =============================================================
+# <?php
+# /**
+#  * Plugin Name: Set Custom Theme Path
+#  */
+
+# register_theme_directory(dirname(__DIR__) . '/template');
+# add_filter('theme_root', function () {
+#     return dirname(__DIR__) . '/template';
+# });
+# add_filter('theme_root_uri', function () {
+#     return home_url('/template');
+# }, 10, 1);
+
+# =============================================================
+# <?php
+# /**
+#  * Plugin Name: Set Upload Settings Once
+#  */
+
+# add_action('init', function () {
+#     if (!get_option('upload_path')) {
+#         update_option('upload_path', '/var/www/wordpress.test/public_html/uploads');
+#     }
+
+#     if (!get_option('upload_url_path')) {
+#         update_option('upload_url_path', 'https://uploads.wordpress.test');
+#     }
+# });
+
+# =============================================================
